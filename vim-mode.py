@@ -7,9 +7,12 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
   
   def __init__(self):
     GObject.Object.__init__(self)
+    self.block = False
     
-  def callback(x, y, z):
-    return True
+  def callback(self, widget, event):
+    if (event.keyval == 0xff1b):
+      self.block = not self.block
+    return self.block
     
   def do_activate(self):
     self.id = self.view.connect("key-press-event", self.callback)
