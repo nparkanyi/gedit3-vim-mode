@@ -1,0 +1,8 @@
+[Plugin]
+Loader=python3
+Module=vim-mode
+IAge=3
+Name=Vim Mode
+Description=Vim-style keybindings for gedit3.
+Authors=Nicholas Parkanyi <n.parkanyi@gmail.com>
+Copyright=Copyright © 2015 Nicholas Parkanyi
