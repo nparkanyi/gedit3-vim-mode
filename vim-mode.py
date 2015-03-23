@@ -17,6 +17,10 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
       print(buf.props.cursor_position)
       it = buf.get_start_iter()
       buf.place_cursor(it) 
+    #'i' insert mode
+    elif (event.keyval == 0x069 and self.block):
+      self.block = False
+      return True
     #'j' cursor down
     elif (event.keyval ==  0x06a and self.block):
       buf = self.view.get_buffer()
@@ -30,6 +34,20 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
       it = buf.get_start_iter()
       it.set_offset(buf.props.cursor_position)
       it.backward_line()
+      buf.place_cursor(it)
+    #'l' cursor right
+    elif (event.keyval == 0x06c and self.block):
+      buf = self.view.get_buffer()
+      it = buf.get_start_iter()
+      it.set_offset(buf.props.cursor_position)
+      it.forward_char()
+      buf.place_cursor(it)
+    #'h' cursor left
+    elif (event.keyval == 0x068 and self.block):
+      buf = self.view.get_buffer()
+      it = buf.get_start_iter()
+      it.set_offset(buf.props.cursor_position)
+      it.backward_char()
       buf.place_cursor(it)
       
     return self.block
