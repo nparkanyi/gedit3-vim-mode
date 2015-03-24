@@ -14,11 +14,6 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
   def callback(self, widget, event):
     if event.keyval == 0xff1b:
       self.block = not self.block
-    elif event.keyval == 0x020 and self.block:
-      buf = self.view.get_buffer()
-      print(buf.props.cursor_position)
-      it = buf.get_start_iter()
-      buf.place_cursor(it)
     #  'i' insert mode
     elif event.keyval == 0x069 and self.block:
       self.block = False
