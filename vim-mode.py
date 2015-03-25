@@ -22,7 +22,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
     
   def process_keystroke(self, widget, event):
     if event.keyval == 0xff1b:
-      self.block = not self.block
+      self.block = True
     #  'i' insert mode
     elif event.keyval == 0x069 and self.block:
       self.block = False
