@@ -11,7 +11,16 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
     GObject.Object.__init__(self)
     self.block = False
 
-  def callback(self, widget, event):
+  def do_activate(self):
+    self.id = self.view.connect("key-press-event", self.process_keystroke)
+
+  def do_deactivate(self):
+    self.view.disconnect(self.id)
+    
+  def do_update_state(self):
+    pass
+    
+  def process_keystroke(self, widget, event):
     if event.keyval == 0xff1b:
       self.block = not self.block
     #  'i' insert mode
@@ -19,30 +28,34 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
       self.block = False
       return True
     elif self.block:
-      buf = self.view.get_buffer()
-      it = buf.get_start_iter()
-      it.set_offset(buf.props.cursor_position)
+      self.buf = self.view.get_buffer()
+      self.it = self.buf.get_start_iter()
+      self.it.set_offset(self.buf.props.cursor_position)
       # 'j' cursor down
       if event.keyval == 0x06a:
-        it.forward_line()
+        self.cursor_down()
       # 'k' cursor up
       elif event.keyval == 0x06b:
-        it.backward_line()
+        self.cursor_up()
       # 'l' cursor right
       elif event.keyval == 0x06c:
-        it.forward_char()
+        self.cursor_right()
       # 'h' cursor left
       elif event.keyval == 0x068:
-        it.backward_char()
-      buf.place_cursor(it)
+        self.cursor_left()
+      self.buf.place_cursor(self.it)
 
     return self.block
 
-  def do_activate(self):
-    self.id = self.view.connect("key-press-event", self.callback)
+  def cursor_down(self):
+    self.it.forward_line()
+    
+  def cursor_up(self):
+    self.it.backward_line()
+    
+  def cursor_right(self):
+    self.it.forward_char()
+    
+  def cursor_left(self):
+    self.it.backward_char()
 
-  def do_deactivate(self):
-    self.view.disconnect(self.id)
-
-  def do_update_state(self):
-    pass
