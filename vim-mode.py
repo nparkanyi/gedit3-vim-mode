@@ -28,9 +28,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
       self.block = False
       return True
     elif self.block:
-      self.buf = self.view.get_buffer()
-      self.it = self.buf.get_start_iter()
-      self.it.set_offset(self.buf.props.cursor_position)
+      self.update_cursor_iterator()
       # 'j' cursor down
       if event.keyval == 0x06a:
         self.cursor_down()
@@ -47,11 +45,18 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
 
     return self.block
 
+  def update_cursor_iterator(self):
+    self.buf = self.view.get_buffer()
+    self.it = self.buf.get_start_iter()
+    self.it.set_offset(self.buf.props.cursor_position)
+    
   def cursor_down(self):
     self.it.forward_line()
+    self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 1.0)
     
   def cursor_up(self):
     self.it.backward_line()
+    self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 0.0)
     
   def cursor_right(self):
     self.it.forward_char()
