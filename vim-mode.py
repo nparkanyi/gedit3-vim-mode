@@ -9,9 +9,9 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
 
   def __init__(self):
     GObject.Object.__init__(self)
-    self.block = False
 
   def do_activate(self):
+    self.block = True
     self.id = self.view.connect("key-press-event", self.process_keystroke)
     self.update_cursor_iterator()
     self.line_offset = self.it.get_line_offset()
