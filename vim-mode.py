@@ -94,11 +94,11 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
       self.it.backward_char()
     
   def cursor_end_line(self):
-    while (not self.it.ends_line()):
+    while not self.it.ends_line():
       self.it.forward_char()
   
   def cursor_start_line(self):
-    while (not self.it.starts_line()):
+    while not self.it.starts_line():
       self.it.backward_char()
 
   def cursor_maintain_line_offset(self):
