@@ -26,7 +26,8 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
     if event.keyval == 0xff1b:
       self.block = True
     #modifier combinations
-    elif event.state & Gdk.ModifierType.MODIFIER_MASK != 0:
+    elif event.state & Gdk.ModifierType.MODIFIER_MASK != 0 \
+         and event.state & Gdk.ModifierType.SHIFT_MASK == 0:
       return False
     #  'i' insert mode
     elif event.keyval == 0x069 and self.block:
@@ -46,6 +47,15 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
       # 'h' cursor left
       elif event.keyval == 0x068:
         self.cursor_left()
+      # 'e' cursor to next end of word
+      elif event.keyval == 0x065:
+        self.cursor_right_word_end()
+      # 'w' cursor to next start of word
+      elif event.keyval == 0x077:
+        self.cursor_right_word_start()
+      # 'b' cursor to previous start of word
+      elif event.keyval == 0x062:
+        self.cursor_left_word_start()
       # '$' cursor to end of line
       elif event.keyval == 0x024:
         self.cursor_end_line()
@@ -96,3 +106,15 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
       if self.it.ends_line():
         break
       self.it.forward_char()
+      
+  def cursor_right_word_end(self):
+    self.it.forward_word_end()
+    
+  def cursor_right_word_start(self):
+    if not self.it.ends_word():
+      self.it.forward_word_end()
+    while not self.it.starts_word():
+      self.it.forward_char()
+      
+  def cursor_left_word_start(self):
+    self.it.backward_word_start()
