@@ -13,6 +13,8 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
 
   def do_activate(self):
     self.id = self.view.connect("key-press-event", self.process_keystroke)
+    self.update_cursor_iterator()
+    self.line_offset = self.it.get_line_offset()
 
   def do_deactivate(self):
     self.view.disconnect(self.id)
@@ -41,8 +43,14 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
       # 'h' cursor left
       elif event.keyval == 0x068:
         self.cursor_left()
+      # '$' cursor to end of line
+      elif event.keyval == 0x024:
+        self.cursor_end_line()
+      # '0' cursor to start of line
+      elif event.keyval == 0x030:
+        self.cursor_start_line()
+        
       self.buf.place_cursor(self.it)
-
     return self.block
 
   def update_cursor_iterator(self):
@@ -51,16 +59,37 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
     self.it.set_offset(self.buf.props.cursor_position)
     
   def cursor_down(self):
+    if not self.it.ends_line():
+      self.line_offset = self.it.get_line_offset()
     self.it.forward_line()
     self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 1.0)
+    self.cursor_maintain_line_offset()
     
   def cursor_up(self):
+    if not self.it.ends_line():
+      self.line_offset = self.it.get_line_offset()
     self.it.backward_line()
     self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 0.0)
+    self.cursor_maintain_line_offset()
     
   def cursor_right(self):
-    self.it.forward_char()
+    if not self.it.ends_line():
+      self.it.forward_char()
     
   def cursor_left(self):
-    self.it.backward_char()
+    if not self.it.starts_line():
+      self.it.backward_char()
+    
+  def cursor_end_line(self):
+    while (not self.it.ends_line()):
+      self.it.forward_char()
+  
+  def cursor_start_line(self):
+    while (not self.it.starts_line()):
+      self.it.backward_char()
 
+  def cursor_maintain_line_offset(self):
+    for i in range(0, self.line_offset):
+      if self.it.ends_line():
+        break
+      self.it.forward_char()
