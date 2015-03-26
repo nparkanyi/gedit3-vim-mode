@@ -1,6 +1,6 @@
 # gedit3-vim-mode: Vim-style keyboard navigation plugin for gedit3.
 # Copyright 2015 Nicholas Parkanyi, licensed under GPLv3 (see 'gpl.txt')
-from gi.repository import GObject, Gedit
+from gi.repository import GObject, Gedit, Gdk
 
 class VimMode(GObject.Object, Gedit.ViewActivatable):
   __gtype_name__ = "VimMode"
@@ -25,6 +25,9 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
   def process_keystroke(self, widget, event):
     if event.keyval == 0xff1b:
       self.block = True
+    #modifier combinations
+    elif event.state & Gdk.ModifierType.MODIFIER_MASK != 0:
+      return False
     #  'i' insert mode
     elif event.keyval == 0x069 and self.block:
       self.block = False
