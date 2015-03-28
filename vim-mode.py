@@ -37,7 +37,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
       return True
     elif self.block:
       # '1' to '9': argument digits
-      if event.keyval >= 0x031 and event.keyval <= 0x039:
+      if 0x031 <= event.keyval <= 0x039:
         self.add_argument_digit(event.keyval - 0x031 + 1)
         return True
       # '0' as argument digit only if user has already other digits
