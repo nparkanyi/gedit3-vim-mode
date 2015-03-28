@@ -9,8 +9,8 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
 
   def __init__(self):
     GObject.Object.__init__(self)
-    self.argument = 0
-    self.argument_num_digits = 0
+    self.argument = 1
+    self.argument_digits = []
 
   def do_activate(self):
     self.block = True
@@ -40,10 +40,22 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
       if event.keyval >= 0x031 and event.keyval <= 0x039:
         self.add_argument_digit(event.keyval - 0x031 + 1)
         return True
+      # '0' as argument digit only if user has already other digits
+      elif event.keyval == 0x30 and len(self.argument_digits) > 0:
+        self.add_argument_digit(0)
+        return True
         
       self.update_cursor_iterator()
       
-      for i in range(0, self.argument):
+      self.argument = 1
+      if len(self.argument_digits) > 0:
+        place = 1
+        self.argument = 0
+        for i in range(len(self.argument_digits), 0, -1):
+          self.argument += place * self.argument_digits[i-1]
+          place *= 10
+      
+      for i in range(self.argument):
         # 'j' cursor down
         if event.keyval == 0x06a: 
           self.cursor_down()
@@ -72,13 +84,13 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         elif event.keyval == 0x030:
           self.cursor_start_line()
         
-      self.argument = 1
+      self.argument_digits = []
       self.buf.place_cursor(self.it)
         
     return self.block
 
   def add_argument_digit(self, digit):
-    self.argument = digit
+    self.argument_digits.append(digit)
     
   def update_cursor_iterator(self):
     self.buf = self.view.get_buffer()
