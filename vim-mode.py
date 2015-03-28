@@ -31,6 +31,9 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
     elif event.state & Gdk.ModifierType.MODIFIER_MASK != 0 \
          and event.state & Gdk.ModifierType.SHIFT_MASK == 0:
       return False
+    #ignore arrow keys
+    elif 0xff51 <= event.keyval <= 0xff54:
+      return False
     #  'i' insert mode
     elif event.keyval == 0x069 and self.block:
       self.block = False
