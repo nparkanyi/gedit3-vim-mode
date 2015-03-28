@@ -9,6 +9,8 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
 
   def __init__(self):
     GObject.Object.__init__(self)
+    self.argument = 0
+    self.argument_num_digits = 0
 
   def do_activate(self):
     self.block = True
@@ -34,38 +36,50 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
       self.block = False
       return True
     elif self.block:
-      self.update_cursor_iterator()
-      # 'j' cursor down
-      if event.keyval == 0x06a:
-        self.cursor_down()
-      # 'k' cursor up
-      elif event.keyval == 0x06b:
-        self.cursor_up()
-      # 'l' cursor right
-      elif event.keyval == 0x06c:
-        self.cursor_right()
-      # 'h' cursor left
-      elif event.keyval == 0x068:
-        self.cursor_left()
-      # 'e' cursor to next end of word
-      elif event.keyval == 0x065:
-        self.cursor_right_word_end()
-      # 'w' cursor to next start of word
-      elif event.keyval == 0x077:
-        self.cursor_right_word_start()
-      # 'b' cursor to previous start of word
-      elif event.keyval == 0x062:
-        self.cursor_left_word_start()
-      # '$' cursor to end of line
-      elif event.keyval == 0x024:
-        self.cursor_end_line()
-      # '0' cursor to start of line
-      elif event.keyval == 0x030:
-        self.cursor_start_line()
+      # '1' to '9': argument digits
+      if event.keyval >= 0x031 and event.keyval <= 0x039:
+        self.add_argument_digit(event.keyval - 0x031 + 1)
+        return True
         
+      self.update_cursor_iterator()
+      
+      for i in range(0, self.argument):
+        # 'j' cursor down
+        if event.keyval == 0x06a: 
+          self.cursor_down()
+        # 'k' cursor up
+        elif event.keyval == 0x06b:
+          self.cursor_up()
+        # 'l' cursor right
+        elif event.keyval == 0x06c:
+          self.cursor_right()
+        # 'h' cursor left
+        elif event.keyval == 0x068:
+          self.cursor_left()
+        # 'e' cursor to next end of word
+        elif event.keyval == 0x065:
+          self.cursor_right_word_end()
+        # 'w' cursor to next start of word
+        elif event.keyval == 0x077:
+          self.cursor_right_word_start()
+        # 'b' cursor to previous start of word
+        elif event.keyval == 0x062:
+          self.cursor_left_word_start()
+        # '$' cursor to end of line
+        elif event.keyval == 0x024:
+          self.cursor_end_line()
+        # '0' cursor to start of line
+        elif event.keyval == 0x030:
+          self.cursor_start_line()
+        
+      self.argument = 1
       self.buf.place_cursor(self.it)
+        
     return self.block
 
+  def add_argument_digit(self, digit):
+    self.argument = digit
+    
   def update_cursor_iterator(self):
     self.buf = self.view.get_buffer()
     self.it = self.buf.get_start_iter()
