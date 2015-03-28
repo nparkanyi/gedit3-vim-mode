@@ -135,12 +135,15 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
       
   def cursor_right_word_end(self):
     self.it.forward_word_end()
+    self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 1.0)
     
   def cursor_right_word_start(self):
     if not self.it.ends_word():
       self.it.forward_word_end()
     while not self.it.starts_word():
       self.it.forward_char()
+    self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 1.0)
       
   def cursor_left_word_start(self):
     self.it.backward_word_start()
+    self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 0.0)
