@@ -50,6 +50,16 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         
       self.update_cursor_iterator()
       
+      # 'O' insert new line above
+      if event.keyval == 0x04f:
+        self.cursor_insert_line_above()
+        self.buf.place_cursor(self.it)
+        return True
+      # 'o' insert new line below
+      elif event.keyval == 0x06f:
+        self.cursor_insert_line_below()
+        return True
+              
       self.argument = 1
       if len(self.argument_digits) > 0:
         place = 1
@@ -150,3 +160,17 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
   def cursor_left_word_start(self):
     self.it.backward_word_start()
     self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 0.0)
+    
+  def cursor_insert_line_above(self):
+    self.cursor_start_line()
+    self.buf.place_cursor(self.it)
+    self.buf.insert_at_cursor("\n", 1)
+    self.update_cursor_iterator()
+    self.cursor_up()
+    self.block = False
+    
+  def cursor_insert_line_below(self):
+    self.cursor_end_line()
+    self.buf.place_cursor(self.it)
+    self.buf.insert_at_cursor("\n", 1)
+    self.block = False
