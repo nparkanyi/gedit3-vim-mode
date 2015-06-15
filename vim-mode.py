@@ -13,6 +13,8 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         GObject.Object.__init__(self)
         self.argument = 1
         self.argument_digits = []
+        self.g_pressed = False
+        self.d_pressed = False
 
     def do_activate(self):
         self.block = True
@@ -27,7 +29,10 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         pass
 
     def process_keystroke(self, widget, event):
-        if event.keyval == 0xff1b:
+        if event.keyval != Gdk.keyval_from_name('g'):
+            self.g_pressed = False      
+        
+        if event.keyval == Gdk.keyval_from_name('Escape'):
             self.block = True
         # modifier combinations
         elif event.state & Gdk.ModifierType.MODIFIER_MASK != 0 \
@@ -98,6 +103,17 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                 # '0' cursor to start of line
                 elif event.keyval == Gdk.keyval_from_name('0'):
                     self.cursor_start_line()
+                # 'G' cursor to end of buffer
+                elif event.keyval == Gdk.keyval_from_name('G'):
+                    self.cursor_end_buffer()
+                # 'gg' cursor to start of buffer
+                elif event.keyval == Gdk.keyval_from_name('g'):
+                    if not self.g_pressed:
+                        self.g_pressed = True
+                        break
+                    else:
+                        self.cursor_start_buffer()
+                        self.g_pressed = False
 
             self.argument_digits = []
             self.buf.place_cursor(self.it)
@@ -176,3 +192,11 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         self.buf.place_cursor(self.it)
         self.buf.insert_at_cursor("\n", 1)
         self.block = False
+
+    def cursor_end_buffer(self):
+        self.it.set_line(self.buf.get_line_count())
+        self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 0.0)
+        
+    def cursor_start_buffer(self):
+        self.it.set_line(0)
+        self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 0.0)
