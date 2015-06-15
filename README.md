@@ -9,6 +9,7 @@ Features
 --------
 * normal mode cursor navigation
 * repeating motions
+* 'J' and 'K' move up and down by 15 lines
 
 Todo
 ----
