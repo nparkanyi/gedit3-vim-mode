@@ -14,6 +14,7 @@ Todo
 ----
 * deleting in normal mode
 * visual mode
+* status bar
 
 Copyright 2015 Nicholas Parkanyi. Distributed under the terms of the GNU General Public
 License, version 3 (see 'gpl.txt').
