@@ -34,6 +34,13 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         
         if event.keyval == Gdk.keyval_from_name('Escape'):
             self.block = True
+            return True
+        # Ctrl-C enters normal mode, only when in insert mode
+        if event.keyval == Gdk.keyval_from_name('c') \
+                and event.state & Gdk.ModifierType.CONTROL_MASK != 0 \
+                and not self.block:
+            self.block = True
+            return True
         # ignore all modifier combinations
         elif event.state & Gdk.ModifierType.MODIFIER_MASK != 0 \
                 and event.state & Gdk.ModifierType.SHIFT_MASK == 0:
