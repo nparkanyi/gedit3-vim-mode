@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # gedit3-vim-mode: Vim-style keyboard navigation plugin for gedit3.
 # Copyright 2015 Nicholas Parkanyi, licensed under GPLv3 (see 'gpl.txt')
 from gi.repository import GObject, Gedit, Gdk
