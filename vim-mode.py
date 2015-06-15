@@ -34,12 +34,20 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         
         if event.keyval == Gdk.keyval_from_name('Escape'):
             self.block = True
-        # modifier combinations
+        # ignore all modifier combinations
         elif event.state & Gdk.ModifierType.MODIFIER_MASK != 0 \
                 and event.state & Gdk.ModifierType.SHIFT_MASK == 0:
             return False
         # ignore arrow keys
         elif Gdk.keyval_from_name('Left') <= event.keyval <= Gdk.keyval_from_name('Down'):
+            return False
+        # ignore shift keypress event
+        elif event.keyval == Gdk.keyval_from_name('Shift_L') \
+                or event.keyval == Gdk.keyval_from_name('Shift_R'):
+            return False
+        # ignore control keypress events
+        elif event.keyval == Gdk.keyval_from_name('Control_L') \
+                or event.keyval == Gdk.keyval_from_name('Control_R'):
             return False
         #  'i' insert mode
         elif event.keyval == Gdk.keyval_from_name('i') and self.block:
@@ -75,6 +83,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                     self.argument += place * self.argument_digits[i-1]
                     place *= 10
 
+            #repeatable commands
             for i in range(self.argument):
                 # 'j' cursor down
                 if event.keyval == Gdk.keyval_from_name('j'):
@@ -82,6 +91,14 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                 # 'k' cursor up
                 elif event.keyval == Gdk.keyval_from_name('k'):
                     self.cursor_up()
+                # 'J' 15j
+                elif event.keyval == Gdk.keyval_from_name('J'):
+                    for x in range(15):
+                        self.cursor_down()
+                # 'K' 15k
+                elif event.keyval == Gdk.keyval_from_name('K'):
+                    for x in range(15):
+                        self.cursor_up()
                 # 'l' cursor right
                 elif event.keyval == Gdk.keyval_from_name('l'):
                     self.cursor_right()
