@@ -114,6 +114,9 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                     else:
                         self.cursor_start_buffer()
                         self.g_pressed = False
+                # 'x' delete char under cursor
+                elif event.keyval == Gdk.keyval_from_name('x'):
+                    self.cursor_delete_char()
 
             self.argument_digits = []
             self.buf.place_cursor(self.it)
@@ -185,12 +188,14 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         self.buf.insert_at_cursor("\n", 1)
         self.update_cursor_iterator()
         self.cursor_up()
+        self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 0.0)
         self.block = False
 
     def cursor_insert_line_below(self):
         self.cursor_end_line()
         self.buf.place_cursor(self.it)
         self.buf.insert_at_cursor("\n", 1)
+        self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 0.0)
         self.block = False
 
     def cursor_end_buffer(self):
@@ -200,3 +205,9 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
     def cursor_start_buffer(self):
         self.it.set_line(0)
         self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 0.0)
+
+    def cursor_delete_char(self):
+        tmp_it = self.buf.get_start_iter()
+        tmp_it.assign(self.it)
+        tmp_it.forward_char()
+        self.buf.delete(self.it, tmp_it)
