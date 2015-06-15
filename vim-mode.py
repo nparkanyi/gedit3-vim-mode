@@ -33,31 +33,31 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                 and event.state & Gdk.ModifierType.SHIFT_MASK == 0:
             return False
         # ignore arrow keys
-        elif 0xff51 <= event.keyval <= 0xff54:
+        elif Gdk.keyval_from_name('Left') <= event.keyval <= Gdk.keyval_from_name('Down'):
             return False
         #  'i' insert mode
-        elif event.keyval == 0x069 and self.block:
+        elif event.keyval == Gdk.keyval_from_name('i') and self.block:
             self.block = False
             return True
         elif self.block:
             # '1' to '9': argument digits
-            if 0x031 <= event.keyval <= 0x039:
-                self.add_argument_digit(event.keyval - 0x031 + 1)
+            if Gdk.keyval_from_name('1') <= event.keyval <= Gdk.keyval_from_name('9'):
+                self.add_argument_digit(event.keyval - Gdk.keyval_from_name('0'))
                 return True
             # '0' as argument digit only if user has already other digits
-            elif event.keyval == 0x30 and len(self.argument_digits) > 0:
+            elif event.keyval == Gdk.keyval_from_name('0') and len(self.argument_digits) > 0:
                 self.add_argument_digit(0)
                 return True
 
             self.update_cursor_iterator()
 
             # 'O' insert new line above
-            if event.keyval == 0x04f:
+            if event.keyval == Gdk.keyval_from_name('O'):
                 self.cursor_insert_line_above()
                 self.buf.place_cursor(self.it)
                 return True
             # 'o' insert new line below
-            elif event.keyval == 0x06f:
+            elif event.keyval == Gdk.keyval_from_name('o'):
                 self.cursor_insert_line_below()
                 return True
 
@@ -71,31 +71,31 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
 
             for i in range(self.argument):
                 # 'j' cursor down
-                if event.keyval == 0x06a:
+                if event.keyval == Gdk.keyval_from_name('j'):
                     self.cursor_down()
                 # 'k' cursor up
-                elif event.keyval == 0x06b:
+                elif event.keyval == Gdk.keyval_from_name('k'):
                     self.cursor_up()
                 # 'l' cursor right
-                elif event.keyval == 0x06c:
+                elif event.keyval == Gdk.keyval_from_name('l'):
                     self.cursor_right()
                 # 'h' cursor left
-                elif event.keyval == 0x068:
+                elif event.keyval == Gdk.keyval_from_name('h'):
                     self.cursor_left()
                 # 'e' cursor to next end of word
-                elif event.keyval == 0x065:
+                elif event.keyval == Gdk.keyval_from_name('e'):
                     self.cursor_right_word_end()
                 # 'w' cursor to next start of word
-                elif event.keyval == 0x077:
+                elif event.keyval == Gdk.keyval_from_name('w'):
                     self.cursor_right_word_start()
                 # 'b' cursor to previous start of word
-                elif event.keyval == 0x062:
+                elif event.keyval == Gdk.keyval_from_name('b'):
                     self.cursor_left_word_start()
                 # '$' cursor to end of line
-                elif event.keyval == 0x024:
+                elif event.keyval == Gdk.keyval_from_name('dollar'):
                     self.cursor_end_line()
                 # '0' cursor to start of line
-                elif event.keyval == 0x030:
+                elif event.keyval == Gdk.keyval_from_name('0'):
                     self.cursor_start_line()
 
             self.argument_digits = []
