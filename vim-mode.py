@@ -113,6 +113,13 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                         and self.g_pressed:
                     self.cursor_start_buffer()
                     self.d_pressed = False
+                elif event.keyval == Gdk.keyval_from_name('d'):
+                    self.cursor_start_line()
+                    self.delete_from.assign(self.it)
+                    for x in range(argument - 1):
+                        self.cursor_down()
+                    self.cursor_end_line()
+                    self.it.forward_char()
                 else:
                     self.process_cursor_motions(event, argument)
 
@@ -184,7 +191,8 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                     self.cursor_start_buffer()
                     self.g_pressed = False
             # 'x' delete char under cursor
-            elif event.keyval == Gdk.keyval_from_name('x'):
+            elif event.keyval == Gdk.keyval_from_name('x') \
+                    and not self.d_pressed:
                 self.cursor_delete_char()
 
     def add_argument_digit(self, digit):
