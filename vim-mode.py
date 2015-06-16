@@ -58,23 +58,20 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         elif event.keyval == Gdk.keyval_from_name('Control_L') \
                 or event.keyval == Gdk.keyval_from_name('Control_R'):
             return False
-        # 'd' begin delete motion
-        elif event.keyval == Gdk.keyval_from_name('d'):
-            self.d_pressed = True
-        # 'i' insert mode
-        elif event.keyval == Gdk.keyval_from_name('i') and self.block:
-            self.insert_mode()
-            return True
-        # 'A' insert mode from end of line
-        elif event.keyval == Gdk.keyval_from_name('A') and self.block:
-            self.update_cursor_iterator()
-            self.cursor_end_line()
-            self.buf.place_cursor(self.it)
-            self.block = False
-            return True
         elif self.block:
+            # 'i' insert mode
+            if event.keyval == Gdk.keyval_from_name('i'):
+                self.insert_mode()
+                return True
+            # 'A' insert mode from end of line
+            elif event.keyval == Gdk.keyval_from_name('A'):
+                self.update_cursor_iterator()
+                self.cursor_end_line()
+                self.buf.place_cursor(self.it)
+                self.block = False
+                return True
             # '1' to '9': argument digits
-            if Gdk.keyval_from_name('1') <= event.keyval <= Gdk.keyval_from_name('9'):
+            elif Gdk.keyval_from_name('1') <= event.keyval <= Gdk.keyval_from_name('9'):
                 self.add_argument_digit(event.keyval - Gdk.keyval_from_name('0'))
                 return True
             # '0' as argument digit only if user has already entered other digits
@@ -84,8 +81,12 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
 
             self.update_cursor_iterator()
 
+            # 'd' begin delete motion
+            if event.keyval == Gdk.keyval_from_name('d') and not self.d_pressed:
+                self.d_pressed = True         
+                return True
             # 'O' insert new line above
-            if event.keyval == Gdk.keyval_from_name('O'):
+            elif event.keyval == Gdk.keyval_from_name('O'):
                 self.cursor_insert_line_above()
                 self.buf.place_cursor(self.it)
                 return True
@@ -102,10 +103,28 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                     argument += place * self.argument_digits[i-1]
                     place *= 10
 
-            #repeatable commands
-            self.process_cursor_motions(event, argument)
-            self.argument_digits = []
-            self.buf.place_cursor(self.it)
+            # repeatable commands
+            if self.d_pressed:
+                # delete motions
+                self.delete_from = self.buf.get_start_iter()
+                self.delete_from.assign(self.it)   
+                
+                if event.keyval == Gdk.keyval_from_name('g') \
+                        and self.g_pressed:
+                    self.cursor_start_buffer()
+                    self.d_pressed = False
+                else:
+                    self.process_cursor_motions(event, argument)
+
+                self.argument_digits = []
+                self.buf.delete(self.delete_from, self.it)
+                if event.keyval != Gdk.keyval_from_name('g') \
+                        or not self.g_pressed:
+                    self.d_pressed = False
+            else:
+                self.process_cursor_motions(event, argument)
+                self.argument_digits = []
+                self.buf.place_cursor(self.it)
 
         return self.block
 
@@ -245,10 +264,12 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
 
     def cursor_end_buffer(self):
         self.it.set_line(self.buf.get_line_count())
+        self.cursor_end_line()
         self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 0.0)
         
     def cursor_start_buffer(self):
         self.it.set_line(0)
+        self.cursor_start_line()
         self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 0.0)
 
     def cursor_delete_char(self):
