@@ -87,12 +87,16 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                 return True
             # 'O' insert new line above
             elif event.keyval == Gdk.keyval_from_name('O'):
+                indent = self.get_line_indent()
                 self.cursor_insert_line_above()
                 self.buf.place_cursor(self.it)
+                self.buf.insert_at_cursor(indent, len(indent))
                 return True
             # 'o' insert new line below
             elif event.keyval == Gdk.keyval_from_name('o'):
+                indent = self.get_line_indent()
                 self.cursor_insert_line_below()
+                self.buf.insert_at_cursor(indent, len(indent))
                 return True
 
             argument = 1
@@ -267,7 +271,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         self.cursor_end_line()
         self.buf.place_cursor(self.it)
         self.buf.insert_at_cursor("\n", 1)
-        self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 0.0)
+        self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 1.0)
         self.insert_mode()
 
     def cursor_end_buffer(self):
@@ -285,3 +289,13 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         tmp_it.assign(self.it)
         tmp_it.forward_char()
         self.buf.delete(self.it, tmp_it)
+
+    # returns string containing spaces and tabs of indent of the current line
+    def get_line_indent(self):
+        indent_str = ""
+        self.cursor_start_line()
+        while self.it.get_char() == " " or self.it.get_char() == "\t":
+            indent_str += self.it.get_char()
+            self.it.forward_char()
+        print('*' + indent_str + '*')
+        return indent_str
