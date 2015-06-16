@@ -271,6 +271,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         self.cursor_end_line()
         self.buf.place_cursor(self.it)
         self.buf.insert_at_cursor("\n", 1)
+        self.update_cursor_iterator()
         self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 1.0)
         self.insert_mode()
 
@@ -293,9 +294,9 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
     # returns string containing spaces and tabs of indent of the current line
     def get_line_indent(self):
         indent_str = ""
+
         self.cursor_start_line()
         while self.it.get_char() == " " or self.it.get_char() == "\t":
             indent_str += self.it.get_char()
             self.it.forward_char()
-        print('*' + indent_str + '*')
         return indent_str
