@@ -3,7 +3,7 @@ gedit3-vim-mode
 
 This plugin enhances gedit3 with basic Vim-style keyboard navigation. To install,
 just copy vim-mode.py and vim-mode.plugin to ~/.local/share/gedit/plugins/ . This
-requires PyGObject.
+requires PyGObject. It has been tested in gedit 3.14 and 3.16. 
 
 Features
 --------
