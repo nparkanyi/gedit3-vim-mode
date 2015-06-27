@@ -1,8 +1,25 @@
 # -*- coding: utf-8 -*-
 # gedit3-vim-mode: Vim-style keyboard navigation plugin for gedit3.
 # Copyright 2015 Nicholas Parkanyi, licensed under GPLv3 (see 'gpl.txt')
-from gi.repository import GObject, Gedit, Gdk
+from gi.repository import GObject, Gedit, Gdk, Gtk
 
+
+class VimModeWindow(GObject.Object, Gedit.WindowActivatable):
+    __gtype_name__ = "VimModeWindow"
+
+    window = GObject.property(type=Gedit.Window)
+
+    def __init__(self):
+        GObject.Object.__init__(self)
+        
+    def do_activate(self):
+        self.status_bar = self.window.get_statusbar()
+        self.ctx_id = self.status_bar.get_context_id('vim_mode')
+        self.status_bar.push(self.ctx_id, 'Vim Mode: NORMAL')
+
+    def do_update_state(self):
+        pass
+        
 
 class VimMode(GObject.Object, Gedit.ViewActivatable):
     __gtype_name__ = "VimMode"
