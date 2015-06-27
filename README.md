@@ -15,7 +15,6 @@ Features
 Todo
 ----
 * visual mode
-* status bar
 * macros
 
 Copyright 2015 Nicholas Parkanyi. Distributed under the terms of the GNU General Public
