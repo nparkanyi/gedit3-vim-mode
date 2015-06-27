@@ -44,9 +44,6 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         self.g_pressed = False
         self.d_pressed = False
 
-    def do_change_mode(self, modestring):
-        pass
-
     def do_activate(self):
         self.block = True
         self.id = self.view.connect("key-press-event", self.process_keystroke)
