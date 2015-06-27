@@ -4,6 +4,9 @@
 from gi.repository import GObject, Gedit, Gdk, Gtk
 
 
+mode_text = 'Vim Mode: NORMAL'
+
+
 class VimModeWindow(GObject.Object, Gedit.WindowActivatable):
     __gtype_name__ = "VimModeWindow"
 
@@ -13,12 +16,20 @@ class VimModeWindow(GObject.Object, Gedit.WindowActivatable):
         GObject.Object.__init__(self)
         
     def do_activate(self):
+        global mode_text
         self.status_bar = self.window.get_statusbar()
         self.ctx_id = self.status_bar.get_context_id('vim_mode')
-        self.status_bar.push(self.ctx_id, 'Vim Mode: NORMAL')
+        self.id = self.window.connect('key-release-event', self.update_statusbar)
+        self.status_bar.push(self.ctx_id, mode_text)
 
     def do_update_state(self):
         pass
+
+    def update_statusbar(self, widget, event):
+        global mode_text
+        self.status_bar.pop(self.ctx_id)
+        self.status_bar.push(self.ctx_id, mode_text)
+        return False
         
 
 class VimMode(GObject.Object, Gedit.ViewActivatable):
@@ -32,6 +43,9 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         self.argument_digits = []
         self.g_pressed = False
         self.d_pressed = False
+
+    def do_change_mode(self, modestring):
+        pass
 
     def do_activate(self):
         self.block = True
@@ -164,11 +178,15 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         return self.block
 
     def insert_mode(self):
+        global mode_text
         self.block = False
         self.d_pressed = False
+        mode_text = 'Vim Mode: INSERT'
 
     def normal_mode(self):
+        global mode_text
         self.block = True
+        mode_text = 'Vim Mode: NORMAL'
         
     def process_cursor_motions(self, event, repeat):
         for i in range(repeat):
