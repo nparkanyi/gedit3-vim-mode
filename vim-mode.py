@@ -63,12 +63,19 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
             if event.keyval == Gdk.keyval_from_name('i'):
                 self.insert_mode()
                 return True
+            # 'a' insert after cursor
+            elif event.keyval == Gdk.keyval_from_name('a'):
+                self.update_cursor_iterator()
+                self.cursor_right()
+                self.buf.place_cursor(self.it)
+                self.insert_mode()
+                return True
             # 'A' insert mode from end of line
             elif event.keyval == Gdk.keyval_from_name('A'):
                 self.update_cursor_iterator()
                 self.cursor_end_line()
                 self.buf.place_cursor(self.it)
-                self.block = False
+                self.insert_mode()
                 return True
             # '1' to '9': argument digits
             elif Gdk.keyval_from_name('1') <= event.keyval <= Gdk.keyval_from_name('9'):
