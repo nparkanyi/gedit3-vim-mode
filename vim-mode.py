@@ -43,6 +43,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         self.argument_digits = []
         self.g_pressed = False
         self.d_pressed = False
+        self.is_visual_mode = False
 
     def do_activate(self):
         self.block = True
@@ -173,8 +174,12 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
             else:
                 self.process_cursor_motions(event, argument)
                 self.argument_digits = []
-                self.buf.place_cursor(self.it)
-
+                if not self.is_visual_mode:
+                    self.buf.place_cursor(self.it)
+                else: 
+                    self.buf.delete_mark(self.buf.get_mark('insert'))
+                    self.buf.create_mark('insert', self.it, False)
+                    
         return self.block
 
     def insert_mode(self):
@@ -187,13 +192,20 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
     def normal_mode(self):
         global mode_text
         self.block = True
+        self.is_visual_mode = False
+        self.update_cursor_iterator()
+        self.buf.place_cursor(self.it)
         mode_text = 'Vim Mode: NORMAL'
         
     def visual_mode(self):
         global mode_text
         self.block = True
         self.is_visual_mode = True
+        self.update_cursor_iterator()
+        self.buf.delete_mark(self.buf.get_mark('selection_bound'))
+        self.buf.create_mark('selection_bound', self.it, False)
         mode_text = 'Vim Mode: VISUAL'
+        
         
     def process_cursor_motions(self, event, repeat):
         for i in range(repeat):
