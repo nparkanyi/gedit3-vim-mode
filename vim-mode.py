@@ -43,6 +43,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         self.argument_digits = []
         self.g_pressed = False
         self.d_pressed = False
+        self.is_visual_mode = False
 
     def do_activate(self):
         self.block = True
@@ -68,7 +69,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         # Ctrl-C enters normal mode, only when in insert mode
         if event.keyval == Gdk.keyval_from_name('c') \
                 and event.state & Gdk.ModifierType.CONTROL_MASK != 0 \
-                and not self.block:
+                and (not self.block or self.is_visual_mode):
             self.normal_mode()
             return True
         # ignore all modifier combinations
@@ -90,6 +91,9 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
             # 'i' insert mode
             if event.keyval == Gdk.keyval_from_name('i'):
                 self.insert_mode()
+                return True
+            elif event.keyval == Gdk.keyval_from_name('v'):
+                self.visual_mode()
                 return True
             # 'a' insert after cursor
             elif event.keyval == Gdk.keyval_from_name('a'):
@@ -170,20 +174,38 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
             else:
                 self.process_cursor_motions(event, argument)
                 self.argument_digits = []
-                self.buf.place_cursor(self.it)
-
+                if not self.is_visual_mode:
+                    self.buf.place_cursor(self.it)
+                else: 
+                    self.buf.delete_mark(self.buf.get_mark('insert'))
+                    self.buf.create_mark('insert', self.it, False)
+                    
         return self.block
 
     def insert_mode(self):
         global mode_text
         self.block = False
         self.d_pressed = False
+        self.is_visual_mode = False
         mode_text = 'Vim Mode: INSERT'
 
     def normal_mode(self):
         global mode_text
         self.block = True
+        self.is_visual_mode = False
+        self.update_cursor_iterator()
+        self.buf.place_cursor(self.it)
         mode_text = 'Vim Mode: NORMAL'
+        
+    def visual_mode(self):
+        global mode_text
+        self.block = True
+        self.is_visual_mode = True
+        self.update_cursor_iterator()
+        self.buf.delete_mark(self.buf.get_mark('selection_bound'))
+        self.buf.create_mark('selection_bound', self.it, False)
+        mode_text = 'Vim Mode: VISUAL'
+        
         
     def process_cursor_motions(self, event, repeat):
         for i in range(repeat):
