@@ -93,7 +93,10 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                 self.insert_mode()
                 return True
             elif event.keyval == Gdk.keyval_from_name('v'):
-                self.visual_mode()
+                if self.is_visual_mode:
+                    self.normal_mode()
+                else:
+                    self.visual_mode()
                 return True
             # 'a' insert after cursor
             elif event.keyval == Gdk.keyval_from_name('a'):
