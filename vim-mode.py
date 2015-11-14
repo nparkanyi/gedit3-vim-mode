@@ -14,7 +14,7 @@ class VimModeWindow(GObject.Object, Gedit.WindowActivatable):
 
     def __init__(self):
         GObject.Object.__init__(self)
-        
+
     def do_activate(self):
         global mode_text
         self.status_bar = self.window.get_statusbar()
@@ -30,7 +30,7 @@ class VimModeWindow(GObject.Object, Gedit.WindowActivatable):
         self.status_bar.pop(self.ctx_id)
         self.status_bar.push(self.ctx_id, mode_text)
         return False
-        
+
 
 class VimMode(GObject.Object, Gedit.ViewActivatable):
     __gtype_name__ = "VimMode"
@@ -59,8 +59,8 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
 
     def process_keystroke(self, widget, event):
         if event.keyval != Gdk.keyval_from_name('g'):
-            self.g_pressed = False      
-        
+            self.g_pressed = False
+
         if event.keyval == Gdk.keyval_from_name('Escape'):
             self.normal_mode()
             # cancel delete motions
@@ -125,7 +125,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
 
             # 'd' begin delete motion
             if event.keyval == Gdk.keyval_from_name('d') and not self.d_pressed:
-                self.d_pressed = True         
+                self.d_pressed = True
                 return True
             # 'O' insert new line above
             elif event.keyval == Gdk.keyval_from_name('O'):
@@ -153,8 +153,8 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
             if self.d_pressed:
                 # delete motions
                 self.delete_from = self.buf.get_start_iter()
-                self.delete_from.assign(self.it)   
-                
+                self.delete_from.assign(self.it)
+
                 if event.keyval == Gdk.keyval_from_name('g') \
                         and self.g_pressed:
                     self.cursor_start_buffer()
@@ -179,10 +179,10 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                 self.argument_digits = []
                 if not self.is_visual_mode:
                     self.buf.place_cursor(self.it)
-                else: 
+                else:
                     self.buf.delete_mark(self.buf.get_mark('insert'))
                     self.buf.create_mark('insert', self.it, False)
-                    
+
         return self.block
 
     def insert_mode(self):
@@ -199,7 +199,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         self.update_cursor_iterator()
         self.buf.place_cursor(self.it)
         mode_text = 'Vim Mode: NORMAL'
-        
+
     def visual_mode(self):
         global mode_text
         self.block = True
@@ -208,8 +208,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         self.buf.delete_mark(self.buf.get_mark('selection_bound'))
         self.buf.create_mark('selection_bound', self.it, False)
         mode_text = 'Vim Mode: VISUAL'
-        
-        
+
     def process_cursor_motions(self, event, repeat):
         for i in range(repeat):
             # 'j' cursor down
@@ -325,6 +324,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
     def cursor_insert_line_above(self):
         self.cursor_start_line()
         self.buf.place_cursor(self.it)
+        #TODO: probably not portable
         self.buf.insert_at_cursor("\n", 1)
         self.update_cursor_iterator()
         self.cursor_up()
@@ -334,6 +334,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
     def cursor_insert_line_below(self):
         self.cursor_end_line()
         self.buf.place_cursor(self.it)
+        #TODO: probably not portable
         self.buf.insert_at_cursor("\n", 1)
         self.update_cursor_iterator()
         self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 1.0)
@@ -343,7 +344,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         self.it.set_line(self.buf.get_line_count())
         self.cursor_end_line()
         self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 0.0)
-        
+
     def cursor_start_buffer(self):
         self.it.set_line(0)
         self.cursor_start_line()
