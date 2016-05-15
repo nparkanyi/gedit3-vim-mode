@@ -45,7 +45,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         self.d_pressed = False
         self.is_visual_mode = False
         self.block = True
-        #True if Alt or Control are held
+        #True if Control is held
         self.modifiers = False
 
     def do_activate(self):
