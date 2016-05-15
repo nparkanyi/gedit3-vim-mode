@@ -44,18 +44,30 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         self.g_pressed = False
         self.d_pressed = False
         self.is_visual_mode = False
+        self.block = True
+        #True if Alt or Control are held
+        self.modifiers = False
 
     def do_activate(self):
-        self.block = True
-        self.id = self.view.connect("key-press-event", self.process_keystroke)
+        self.id_press = self.view.connect("key-press-event", self.process_keystroke)
+        self.id_release = self.view.connect("key-release-event", self.process_keyrelease)
+
         self.update_cursor_iterator()
         self.line_offset = self.it.get_line_offset()
 
     def do_deactivate(self):
-        self.view.disconnect(self.id)
+        self.view.disconnect(self.id_press)
+        self.view.disconnect(self.id_release)
 
     def do_update_state(self):
         pass
+
+    def process_keyrelease(self, widget, event):
+        if event.keyval == Gdk.keyval_from_name('Control_L')\
+                or event.keyval == Gdk.keyval_from_name('Control_R'):
+            self.modifiers = False
+
+        return False
 
     def process_keystroke(self, widget, event):
         if event.keyval != Gdk.keyval_from_name('g'):
@@ -72,10 +84,6 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                 and (not self.block or self.is_visual_mode):
             self.normal_mode()
             return True
-        # ignore all modifier combinations
-        elif event.state & Gdk.ModifierType.MODIFIER_MASK != 0 \
-                and event.state & Gdk.ModifierType.SHIFT_MASK == 0:
-            return False
         # ignore arrow keys
         elif Gdk.keyval_from_name('Left') <= event.keyval <= Gdk.keyval_from_name('Down'):
             return False
@@ -83,11 +91,13 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         elif event.keyval == Gdk.keyval_from_name('Shift_L') \
                 or event.keyval == Gdk.keyval_from_name('Shift_R'):
             return False
-        # ignore control keypress events
+        # ignore control
         elif event.keyval == Gdk.keyval_from_name('Control_L') \
                 or event.keyval == Gdk.keyval_from_name('Control_R'):
+            self.modifiers = True
             return False
-        elif self.block:
+
+        elif self.block and not self.modifiers:
             # 'i' insert mode
             if event.keyval == Gdk.keyval_from_name('i'):
                 self.insert_mode()
@@ -183,7 +193,10 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                     self.buf.delete_mark(self.buf.get_mark('insert'))
                     self.buf.create_mark('insert', self.it, False)
 
-        return self.block
+        if self.modifiers:
+            return False
+        else:
+            return self.block 
 
     def insert_mode(self):
         global mode_text
