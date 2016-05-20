@@ -135,8 +135,14 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
 
             # 'd' begin delete motion
             if event.keyval == Gdk.keyval_from_name('d') and not self.d_pressed:
-                self.d_pressed = True
-                return True
+                if self.is_visual_mode:
+                    self.buf.delete(self.buf.get_iter_at_mark(self.buf.get_mark('selection_bound')), \
+                                    self.buf.get_iter_at_mark(self.buf.get_mark('insert')))
+                    self.normal_mode()
+                    return True
+                else:
+                    self.d_pressed = True
+                    return True
             # 'O' insert new line above
             elif event.keyval == Gdk.keyval_from_name('O'):
                 indent = self.get_line_indent()
@@ -158,6 +164,19 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                 for i in range(len(self.argument_digits), 0, -1):
                     argument += place * self.argument_digits[i-1]
                     place *= 10
+
+            # 'x' delete char under cursor
+            if event.keyval == Gdk.keyval_from_name('x') \
+                    and not self.d_pressed:
+                if self.is_visual_mode:
+                    self.buf.delete(self.buf.get_iter_at_mark(self.buf.get_mark('selection_bound')), \
+                                    self.buf.get_iter_at_mark(self.buf.get_mark('insert')))
+                    self.normal_mode()
+                    return True
+                else:
+                    for x in range(argument):
+                        self.cursor_delete_char()
+                    return True
 
             # repeatable commands
             if self.d_pressed:
@@ -190,13 +209,12 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                 if not self.is_visual_mode:
                     self.buf.place_cursor(self.it)
                 else:
-                    self.buf.delete_mark(self.buf.get_mark('insert'))
                     self.buf.create_mark('insert', self.it, False)
 
         if self.modifiers:
             return False
         else:
-            return self.block 
+            return self.block
 
     def insert_mode(self):
         global mode_text
@@ -218,7 +236,6 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         self.block = True
         self.is_visual_mode = True
         self.update_cursor_iterator()
-        self.buf.delete_mark(self.buf.get_mark('selection_bound'))
         self.buf.create_mark('selection_bound', self.it, False)
         mode_text = 'Vim Mode: VISUAL'
 
@@ -270,11 +287,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                 else:
                     self.cursor_start_buffer()
                     self.g_pressed = False
-            # 'x' delete char under cursor
-            elif event.keyval == Gdk.keyval_from_name('x') \
-                    and not self.d_pressed:
-                self.cursor_delete_char()
-
+            
     def add_argument_digit(self, digit):
         self.argument_digits.append(digit)
 
