@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # gedit3-vim-mode: Vim-style keyboard navigation plugin for gedit3.
 # Copyright 2015 Nicholas Parkanyi, licensed under GPLv3 (see 'gpl.txt')
-from gi.repository import GObject, Gedit, Gdk
+from gi.repository import GObject, Gedit, Gdk, Gtk
 
 
 mode_text = 'Vim Mode: NORMAL'
@@ -54,6 +54,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
 
         self.update_cursor_iterator()
         self.line_offset = self.it.get_line_offset()
+        self.clip = Gtk.Clipboard.get(Gdk.Atom.intern('CLIPBOARD', True))
 
     def do_deactivate(self):
         self.view.disconnect(self.id_press)
@@ -122,6 +123,11 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                 self.buf.place_cursor(self.it)
                 self.insert_mode()
                 return True
+            elif event.keyval == Gdk.keyval_from_name('y'):
+                if self.is_visual_mode:
+                    self.buf.copy_clipboard(self.clip)
+                self.normal_mode()
+                return True
             # '1' to '9': argument digits
             elif Gdk.keyval_from_name('1') <= event.keyval <= Gdk.keyval_from_name('9'):
                 self.add_argument_digit(event.keyval - Gdk.keyval_from_name('0'))
@@ -177,6 +183,12 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                     for x in range(argument):
                         self.cursor_delete_char()
                     return True
+
+            # 'p' paste from clipboard
+            if event.keyval == Gdk.keyval_from_name('p') and not self.d_pressed:
+                for x in range(argument):
+                    self.buf.paste_clipboard(self.clip, None, True)
+                return True
 
             # repeatable commands
             if self.d_pressed:
