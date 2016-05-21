@@ -11,10 +11,10 @@ Features
 * repeating motions
 * 'J' and 'K' move up and down by 15 lines
 * Ctrl-C exits insert mode (copies selection in other modes)
+* visual mode: copy and paste with 'y' and 'p'
 
 Todo
 ----
-* visual mode
 * macros
 
 Copyright 2015 Nicholas Parkanyi. Distributed under the terms of the GNU General Public
