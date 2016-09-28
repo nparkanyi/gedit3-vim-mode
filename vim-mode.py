@@ -19,7 +19,8 @@ class VimModeWindow(GObject.Object, Gedit.WindowActivatable):
         global mode_text
         self.status_bar = self.window.get_statusbar()
         self.ctx_id = self.status_bar.get_context_id('vim_mode')
-        self.id = self.window.connect('key-release-event', self.update_statusbar)
+        self.id = self.window.connect('key-release-event', \
+				      self.update_statusbar)
         self.status_bar.push(self.ctx_id, mode_text)
 
     def do_update_state(self):
@@ -49,8 +50,10 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         self.modifiers = False
 
     def do_activate(self):
-        self.id_press = self.view.connect("key-press-event", self.process_keystroke)
-        self.id_release = self.view.connect("key-release-event", self.process_keyrelease)
+        self.id_press = self.view.connect("key-press-event", \
+					  self.process_keystroke)
+        self.id_release = self.view.connect("key-release-event", \
+					    self.process_keyrelease)
 
         self.update_cursor_iterator()
         self.line_offset = self.it.get_line_offset()
@@ -86,7 +89,8 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
             self.normal_mode()
             return True
         # ignore arrow keys
-        elif Gdk.keyval_from_name('Left') <= event.keyval <= Gdk.keyval_from_name('Down'):
+        elif Gdk.keyval_from_name('Left') <= event.keyval \
+					  <= Gdk.keyval_from_name('Down'):
             return False
         # ignore shift keypress event
         elif event.keyval == Gdk.keyval_from_name('Shift_L') \
@@ -129,11 +133,13 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                 self.normal_mode()
                 return True
             # '1' to '9': argument digits
-            elif Gdk.keyval_from_name('1') <= event.keyval <= Gdk.keyval_from_name('9'):
+            elif Gdk.keyval_from_name('1') <= event.keyval \
+					   <= Gdk.keyval_from_name('9'):
                 self.add_argument_digit(event.keyval - Gdk.keyval_from_name('0'))
                 return True
             # '0' as argument digit only if user has already entered other digits
-            elif event.keyval == Gdk.keyval_from_name('0') and len(self.argument_digits) > 0:
+            elif event.keyval == Gdk.keyval_from_name('0') \
+			and len(self.argument_digits) > 0:
                 self.add_argument_digit(0)
                 return True
 
@@ -142,8 +148,10 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
             # 'd' begin delete motion
             if event.keyval == Gdk.keyval_from_name('d') and not self.d_pressed:
                 if self.is_visual_mode:
-                    self.buf.delete(self.buf.get_iter_at_mark(self.buf.get_mark('selection_bound')), \
-                                    self.buf.get_iter_at_mark(self.buf.get_mark('insert')))
+                    self.buf.delete(self.buf.get_iter_at_mark( \
+					self.buf.get_mark('selection_bound')), \
+                                    self.buf.get_iter_at_mark( \
+					self.buf.get_mark('insert')))
                     self.normal_mode()
                     return True
                 else:
@@ -175,8 +183,10 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
             if event.keyval == Gdk.keyval_from_name('x') \
                     and not self.d_pressed:
                 if self.is_visual_mode:
-                    self.buf.delete(self.buf.get_iter_at_mark(self.buf.get_mark('selection_bound')), \
-                                    self.buf.get_iter_at_mark(self.buf.get_mark('insert')))
+                    self.buf.delete(self.buf.get_iter_at_mark( \
+					self.buf.get_mark('selection_bound')), \
+                                    self.buf.get_iter_at_mark( \
+					self.buf.get_mark('insert')))
                     self.normal_mode()
                     return True
                 else:
