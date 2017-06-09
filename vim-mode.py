@@ -88,6 +88,15 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
                 and (not self.block or self.is_visual_mode):
             self.normal_mode()
             return True
+
+        # 'Ctrl-R' primitive redo
+        # (just the same as ctrl+shift+z, not the vim redo)
+        if event.keyval == Gdk.keyval_from_name('r') \
+           and event.state & Gdk.ModifierType.CONTROL_MASK != 0:
+            if self.buf.can_redo():
+                self.buf.redo()
+            return True
+
         # ignore arrow keys
         elif Gdk.keyval_from_name('Left') <= event.keyval \
 					  <= Gdk.keyval_from_name('Down'):
@@ -198,6 +207,13 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
             if event.keyval == Gdk.keyval_from_name('p') and not self.d_pressed:
                 for x in range(argument):
                     self.buf.paste_clipboard(self.clip, None, True)
+                return True
+
+            # 'u' primitive undo
+            # (just the same as ctrl+z, not the vim undo)
+            if event.keyval == Gdk.keyval_from_name('u') and not self.d_pressed:
+                if self.buf.can_undo():
+                    self.buf.undo()
                 return True
 
             # repeatable commands
