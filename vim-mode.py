@@ -83,7 +83,7 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
             self.d_pressed = False
             return True
         # Ctrl-C enters normal mode, only when in insert mode
-        if event.keyval == Gdk.keyval_from_name('c') \
+        if event.keyval == Gdk.keyval_from_name('bracketleft') \
                 and event.state & Gdk.ModifierType.CONTROL_MASK != 0 \
                 and (not self.block or self.is_visual_mode):
             self.normal_mode()
