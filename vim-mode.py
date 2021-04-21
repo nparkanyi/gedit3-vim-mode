@@ -40,8 +40,10 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
 
     def __init__(self):
         GObject.Object.__init__(self)
-        self.argument = 1
         self.argument_digits = []
+        # when first 'g' is pressed, remember argument number for second 'g'
+        # 0 means no argument number explicitly given
+        self.gg_argument = 0
         self.g_pressed = False
         self.d_pressed = False
         self.is_visual_mode = False
@@ -278,54 +280,75 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         mode_text = 'Vim Mode: VISUAL'
 
     def process_cursor_motions(self, event, repeat):
-        for i in range(repeat):
-            # 'j' cursor down
-            if event.keyval == Gdk.keyval_from_name('j'):
-                self.cursor_down()
-            # 'k' cursor up
-            elif event.keyval == Gdk.keyval_from_name('k'):
-                self.cursor_up()
-            # 'J' 15j
-            elif event.keyval == Gdk.keyval_from_name('J'):
-                for x in range(15):
-                    self.cursor_down()
-            # 'K' 15k
-            elif event.keyval == Gdk.keyval_from_name('K'):
-                for x in range(15):
-                    self.cursor_up()
-            # 'l' cursor right
-            elif event.keyval == Gdk.keyval_from_name('l'):
-                self.cursor_right()
-            # 'h' cursor left
-            elif event.keyval == Gdk.keyval_from_name('h'):
-                self.cursor_left()
-            # 'e' cursor to next end of word
-            elif event.keyval == Gdk.keyval_from_name('e'):
-                self.cursor_right_word_end()
-            # 'w' cursor to next start of word
-            elif event.keyval == Gdk.keyval_from_name('w'):
-                self.cursor_right_word_start()
-            # 'b' cursor to previous start of word
-            elif event.keyval == Gdk.keyval_from_name('b'):
-                self.cursor_left_word_start()
-            # '$' cursor to end of line
-            elif event.keyval == Gdk.keyval_from_name('dollar'):
-                self.cursor_end_line()
-            # '0' cursor to start of line
-            elif event.keyval == Gdk.keyval_from_name('0'):
-                self.cursor_start_line()
-            # 'G' cursor to end of buffer
-            elif event.keyval == Gdk.keyval_from_name('G'):
-                self.cursor_end_buffer()
-            # 'gg' cursor to start of buffer
-            elif event.keyval == Gdk.keyval_from_name('g'):
+        try:
+            # 'gg'
+            if event.keyval == Gdk.keyval_from_name('g'):
+                # first 'g'
                 if not self.g_pressed:
+                    if len(self.argument_digits) > 0:
+                        self.gg_argument = repeat
                     self.g_pressed = True
-                    break
+                    return
+                # '<number>gg' cursor to that line number
+                elif self.gg_argument > 0:
+                    self.cursor_go_to_line(self.gg_argument)
+                # 'gg' cursor to start of buffer
                 else:
                     self.cursor_start_buffer()
-                    self.g_pressed = False
-            
+
+                self.g_pressed = False
+                return
+
+            # 'G'
+            if event.keyval == Gdk.keyval_from_name('G'):
+                # '<number>G' cursor to that line number
+                if repeat > 1 or (repeat == 1 and len(self.argument_digits) == 1):
+                    self.cursor_go_to_line(repeat)
+                # 'G' cursor to end of buffer
+                else:
+                    self.cursor_end_buffer()
+                return
+
+            for i in range(repeat):
+                # 'j' cursor down
+                if event.keyval == Gdk.keyval_from_name('j'):
+                    self.cursor_down()
+                # 'k' cursor up
+                elif event.keyval == Gdk.keyval_from_name('k'):
+                    self.cursor_up()
+                # 'J' 15j
+                elif event.keyval == Gdk.keyval_from_name('J'):
+                    for x in range(15):
+                        self.cursor_down()
+                # 'K' 15k
+                elif event.keyval == Gdk.keyval_from_name('K'):
+                    for x in range(15):
+                        self.cursor_up()
+                # 'l' cursor right
+                elif event.keyval == Gdk.keyval_from_name('l'):
+                    self.cursor_right()
+                # 'h' cursor left
+                elif event.keyval == Gdk.keyval_from_name('h'):
+                    self.cursor_left()
+                # 'e' cursor to next end of word
+                elif event.keyval == Gdk.keyval_from_name('e'):
+                    self.cursor_right_word_end()
+                # 'w' cursor to next start of word
+                elif event.keyval == Gdk.keyval_from_name('w'):
+                    self.cursor_right_word_start()
+                # 'b' cursor to previous start of word
+                elif event.keyval == Gdk.keyval_from_name('b'):
+                    self.cursor_left_word_start()
+                # '$' cursor to end of line
+                elif event.keyval == Gdk.keyval_from_name('dollar'):
+                    self.cursor_end_line()
+                # '0' cursor to start of line
+                elif event.keyval == Gdk.keyval_from_name('0'):
+                    self.cursor_start_line()
+        finally:
+            if not self.g_pressed:
+                self.gg_argument = 0
+
     def add_argument_digit(self, digit):
         self.argument_digits.append(digit)
 
@@ -419,6 +442,10 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
         tmp_it.assign(self.it)
         tmp_it.forward_char()
         self.buf.delete(self.it, tmp_it)
+
+    def cursor_go_to_line(self, line_num):
+        self.it.set_line(line_num - 1)
+        self.view.scroll_to_iter(self.it, 0.0, False, 0.0, 0.0)
 
     # returns string containing spaces and tabs of indent of the current line
     def get_line_indent(self):
