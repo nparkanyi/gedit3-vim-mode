@@ -82,8 +82,9 @@ class VimMode(GObject.Object, Gedit.ViewActivatable):
 
         if event.keyval == Gdk.keyval_from_name('Escape'):
             self.normal_mode()
-            # cancel delete motions
+            # cancel delete motions and numbers
             self.d_pressed = False
+            self.argument_digits = []
             return True
         # Ctrl-C enters normal mode, only when in insert mode
         if event.keyval == Gdk.keyval_from_name('c') \
